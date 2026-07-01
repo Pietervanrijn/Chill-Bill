@@ -5,31 +5,57 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.LIGHTSPEED_API_KEY;
 const API_SECRET = process.env.LIGHTSPEED_API_SECRET;
+const SHOP = 'nl';
+
 const getAuth = () => Buffer.from(API_KEY + ':' + API_SECRET).toString('base64');
+const apiHeaders = () => ({ Authorization: 'Basic ' + getAuth() });
+
 async function fetchOrders() {
   let all = [], page = 1, more = true;
   while (more) {
     try {
-      const r = await axios.get('https://api.webshopapp.com/nl/orders.json', {
-        headers: { Authorization: 'Basic ' + getAuth() },
+      const r = await axios.get('https://api.webshopapp.com/' + SHOP + '/orders.json', {
+        headers: apiHeaders(),
         params: { status: 'processing_awaiting_shipment', limit: 250, page }
       });
-      const o = r.data.orders || [];
-      all = all.concat(o);
-      more = o.length >= 250;
+      const orders = r.data.orders || [];
+      all = all.concat(orders);
+      more = orders.length >= 250;
       page++;
-    } catch(e) { console.error(e.message); more = false; }
+    } catch(e) { console.error('fetchOrders error:', e.message); more = false; }
   }
   return all;
 }
-function dagFilter(orders) {
-  return orders.filter(o => JSON.stringify(o).toUpperCase().includes('DAGBEZORGING'));
+
+async function enrichOrders(orders) {
+  const dagOrders = orders.filter(o => JSON.stringify(o).toUpperCase().includes('DAGBEZORGING'));
+  const enriched = dagOrders.map((order) => {
+    const addr = order.billingAddress || {};
+    const firstName = addr.firstName || '';
+    const lastName = addr.lastName || '';
+    const klant = (firstName + ' ' + lastName).trim() || order.email || 'Onbekend';
+    let shippingMethod = order.shippingTitle || order.shippingMethod || 'DAGBEZORGING';
+    const orderStr = JSON.stringify(order);
+    const dagMatch = orderStr.match(/"([^"]*[Dd][Aa][Gg][Bb][Ee][Zz][Oo][Rr][Gg][Ii][Nn][Gg][^"]*)"/);
+    if (dagMatch) shippingMethod = dagMatch[1];
+    const ordNummer = 'ORD' + order.number;
+    return { ...order, _klant: klant, _ordNummer: ordNummer, _shippingMethod: shippingMethod };
+  });
+  return enriched;
 }
+
 app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
+
 app.get('/api/orders', async (req, res) => {
   try {
-    const filtered = dagFilter(await fetchOrders());
-    res.json({ orders: filtered, total: filtered.length });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+    const orders = await fetchOrders();
+    const enriched = await enrichOrders(orders);
+    const methods = [...new Set(enriched.map(o => o._shippingMethod).filter(Boolean))].sort();
+    res.json({ orders: enriched, total: enriched.length, shippingMethods: methods });
+  } catch(e) {
+    console.error('API error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
-app.listen(PORT, () => console.log('Chill-Bill port ' + PORT));
+
+app.listen(PORT, () => console.log('Chill-Bill running on port ' + PORT));
