@@ -1,190 +1,310 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chill-Bill | DAGBEZORGING Orders</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f4f8;min-height:100vh}
-    .header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:20px 30px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.3)}
-    .logo{font-size:28px;font-weight:700;letter-spacing:1px}
-    .logo span{color:#4fc3f7}
-    .header-right{display:flex;align-items:center;gap:16px}
-    .updated{font-size:12px;color:rgba(255,255,255,.6)}
-    .refresh-btn{background:#4fc3f7;color:#1a1a2e;border:none;padding:10px 24px;border-radius:25px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
-    .refresh-btn:hover{background:#81d4fa;transform:scale(1.05)}
-    .refresh-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-    .container{max-width:1400px;margin:30px auto;padding:0 20px}
-    .toolbar{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);flex-wrap:wrap}
-    .filter-label{font-size:13px;font-weight:600;color:#555;white-space:nowrap}
-    .filter-select{background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:20px;padding:8px 20px;font-size:14px;font-weight:500;color:#333;cursor:pointer;outline:none;transition:border-color .2s;min-width:220px}
-    .filter-select:focus,.filter-select:hover{border-color:#4fc3f7}
-    .filter-count{font-size:13px;color:#999;margin-left:auto}
-    .stats{background:#fff;border-radius:12px;padding:20px 30px;margin-bottom:24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    .count{font-size:48px;font-weight:800;color:#1a1a2e;line-height:1}
-    .stats-labels{display:flex;flex-direction:column;gap:6px}
-    .stats-title{font-size:14px;color:#666}
-    .badge{padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;display:inline-block}
-    .badge-green{background:#e8f5e9;color:#2e7d32}
-    .badge-blue{background:#e3f2fd;color:#1565c0}
-    .spinner{width:16px;height:16px;border:2px solid rgba(26,26,46,.3);border-top-color:#1a1a2e;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .empty{text-align:center;padding:80px 20px;color:#999}
-    .empty-icon{font-size:64px;margin-bottom:16px}
-    .empty p{font-size:16px}
-    .error-box{background:#ffebee;color:#c62828;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-weight:500}
-    .orders-table-wrap{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden}
-    .orders-table{width:100%;border-collapse:collapse}
-    .orders-table thead tr{background:#fff;border-bottom:2px solid #f0f4f8}
-    .orders-table thead th{padding:14px 16px;text-align:left;font-size:11px;font-weight:700;color:#4fc3f7;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
-    .orders-table thead th:first-child{width:40px;padding-left:20px}
-    .orders-table tbody tr{border-bottom:1px solid #f0f4f8;transition:background .15s}
-    .orders-table tbody tr:last-child{border-bottom:none}
-    .orders-table tbody tr:hover{background:#f8fbff}
-    .orders-table tbody td{padding:14px 16px;vertical-align:middle;font-size:14px;color:#333}
-    .orders-table tbody td:first-child{padding-left:20px}
-    .order-checkbox{width:16px;height:16px;cursor:pointer;accent-color:#4fc3f7}
-    .status-text{font-weight:600;color:#1a1a2e;font-size:13px}
-    .shop-status-icon{width:28px;height:28px;background:#4caf50;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
-    .order-num-link{color:#1565c0;font-weight:700;font-size:14px;text-decoration:none}
-    .order-num-link:hover{text-decoration:underline}
-    .order-date{font-size:12px;color:#4fc3f7;margin-top:3px}
-    .ship-method-wrap{display:flex;align-items:center;gap:10px}
-    .ship-icon{width:28px;height:28px;border-radius:6px;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-    .ship-name{font-weight:500;color:#333;font-size:13px}
-    .inhoud-items{font-weight:600;color:#1a1a2e;font-size:13px}
-    .inhoud-detail{font-size:12px;color:#666;margin-top:2px}
-    .klant-naam{color:#1565c0;font-weight:600;font-size:13px}
-    .klant-email{font-size:12px;color:#666;margin-top:2px}
-    .klant-adres{font-size:12px;color:#666;margin-top:2px;display:flex;align-items:center;gap:4px}
-    .flag{font-size:14px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chill-Bill | DAGBEZORGING Orders</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f4f8;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:20px 30px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.logo{font-size:28px;font-weight:700;letter-spacing:1px}
+.logo span{color:#4fc3f7}
+.header-right{display:flex;align-items:center;gap:16px}
+.updated{font-size:12px;color:rgba(255,255,255,.6)}
+.refresh-btn{background:#4fc3f7;color:#1a1a2e;border:none;padding:10px 24px;border-radius:25px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
+.refresh-btn:hover{background:#81d4fa;transform:scale(1.05)}
+.refresh-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.container{max-width:1400px;margin:30px auto;padding:0 20px}
+.toolbar{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);flex-wrap:wrap}
+.filter-label{font-size:13px;font-weight:600;color:#555;white-space:nowrap}
+.filter-select{background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:20px;padding:8px 20px;font-size:14px;font-weight:500;color:#333;cursor:pointer;outline:none;transition:border-color .2s;min-width:180px}
+.filter-select:focus,.filter-select:hover{border-color:#4fc3f7}
+.filter-count{font-size:13px;color:#999;margin-left:auto}
+.print-btn{background:#1a1a2e;color:#fff;border:none;padding:9px 22px;border-radius:20px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.print-btn:hover:not(:disabled){background:#0f1729}
+.print-btn:disabled{opacity:.35;cursor:not-allowed}
+.stats{background:#fff;border-radius:12px;padding:20px 30px;margin-bottom:24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.count{font-size:48px;font-weight:800;color:#1a1a2e;line-height:1}
+.stats-labels{display:flex;flex-direction:column;gap:6px}
+.stats-title{font-size:14px;color:#666}
+.badge{padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;display:inline-block}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.spinner{width:16px;height:16px;border:2px solid rgba(26,26,46,.3);border-top-color:#1a1a2e;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:80px 20px;color:#999}
+.empty-icon{font-size:64px;margin-bottom:16px}
+.empty p{font-size:16px}
+.error-box{background:#ffebee;color:#c62828;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-weight:500}
+.orders-table-wrap{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden}
+.orders-table{width:100%;border-collapse:collapse}
+.orders-table thead tr{background:#fff;border-bottom:2px solid #f0f4f8}
+.orders-table thead th{padding:14px 16px;text-align:left;font-size:11px;font-weight:700;color:#4fc3f7;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.orders-table thead th:first-child{width:40px;padding-left:20px}
+.orders-table tbody tr{border-bottom:1px solid #f0f4f8;transition:background .15s}
+.orders-table tbody tr:last-child{border-bottom:none}
+.orders-table tbody tr:hover{background:#f8fbff}
+.orders-table tbody td{padding:14px 16px;vertical-align:middle;font-size:14px;color:#333}
+.orders-table tbody td:first-child{padding-left:20px}
+.order-checkbox{width:16px;height:16px;cursor:pointer;accent-color:#4fc3f7}
+.status-text{font-weight:600;color:#1a1a2e;font-size:13px}
+.shop-status-icon{width:28px;height:28px;background:#4caf50;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.order-num-link{color:#1565c0;font-weight:700;font-size:14px;text-decoration:none}
+.order-num-link:hover{text-decoration:underline}
+.order-date{font-size:12px;color:#4fc3f7;margin-top:3px}
+.ship-method-wrap{display:flex;align-items:center;gap:10px}
+.ship-icon{width:28px;height:28px;border-radius:6px;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ship-name{font-weight:500;color:#333;font-size:13px}
+.inhoud-items{font-weight:600;color:#1a1a2e;font-size:13px}
+.inhoud-detail{font-size:12px;color:#666;margin-top:2px}
+.klant-naam{color:#1565c0;font-weight:600;font-size:13px}
+.klant-email{font-size:12px;color:#666;margin-top:2px}
+.klant-adres{font-size:12px;color:#666;margin-top:2px;display:flex;align-items:center;gap:4px}
+.flag{font-size:14px}
+.geprint-badge{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;display:inline-block;white-space:nowrap;border:none}
+.geprint-geen{background:#f5f5f5;color:#999}
+.geprint-pakbon{background:#fff3e0;color:#e65100}
+.geprint-beide{background:#e8f5e9;color:#2e7d32}
+</style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo">Chill<span>-Bill</span></div>
-    <div class="header-right">
-      <span class="updated" id="updated"></span>
-      <button class="refresh-btn" id="refreshBtn" onclick="loadOrders()">
-        <span>&#8635;</span> Vernieuwen
-      </button>
-    </div>
-  </div>
-  <div class="container">
-    <div class="stats">
-      <div class="count" id="count">0</div>
-      <div class="stats-labels">
-        <span class="stats-title">Orders klaar voor verzending</span>
-        <div>
-          <span class="badge badge-green">&#x1F69A; DAGBEZORGING</span>
-          <span class="badge badge-blue" style="margin-left:6px">Klaar voor verzending</span>
-        </div>
-      </div>
-    </div>
-    <div class="toolbar">
-      <span class="filter-label">&#x1F50D; Filter op verzendmethode:</span>
-      <select class="filter-select" id="methodFilter" onchange="applyFilter()">
-        <option value="">Alle DAGBEZORGING methodes (0)</option>
-      </select>
-      <span class="filter-count" id="filterCount"></span>
-    </div>
-    <div id="errorBox"></div>
-    <div id="ordersContainer">
-      <div class="empty"><div class="empty-icon">&#9203;</div><p>Orders worden geladen...</p></div>
-    </div>
-  </div>
-  <script>
-    var allOrders = [];
-    var allMethods = [];
+<div class="header">
+<div class="logo">Chill<span>-Bill</span></div>
+<div class="header-right">
+<span class="updated" id="updated"></span>
+<button class="refresh-btn" id="refreshBtn" onclick="loadOrders()">
+<span>&#8635;</span> Vernieuwen
+</button>
+</div>
+</div>
+<div class="container">
+<div class="stats">
+<div class="count" id="count">0</div>
+<div class="stats-labels">
+<span class="stats-title">Orders klaar voor verzending</span>
+<div>
+<span class="badge badge-green">&#x1F69A; DAGBEZORGING</span>
+<span class="badge badge-blue" style="margin-left:6px">Klaar voor verzending</span>
+</div>
+</div>
+</div>
+<div class="toolbar">
+<span class="filter-label">&#x1F50D; Filter op verzendmethode:</span>
+<select class="filter-select" id="methodFilter" onchange="applyFilter()">
+<option value="">Alle DAGBEZORGING methodes (0)</option>
+</select>
+<span class="filter-label">&#x1F5A8;&#xFE0F; Filter op geprinte doc:</span>
+<select class="filter-select" id="printFilter" onchange="applyFilter()">
+<option value="">Alle (geprinte doc)</option>
+<option value="geen">Geen geprint</option>
+<option value="pakbon">Enkel pakbon</option>
+<option value="beide">Beide geprint</option>
+</select>
+<button class="print-btn" id="printBtn" onclick="printPakbonnen()" disabled>&#x1F5A8;&#xFE0F; Print pakbon (<span id="selCount">0</span>)</button>
+<span class="filter-count" id="filterCount"></span>
+</div>
+<div id="errorBox"></div>
+<div id="ordersContainer">
+<div class="empty"><div class="empty-icon">&#9203;</div><p>Orders worden geladen...</p></div>
+</div>
+</div>
+<script>
+var allOrders = [];
+var allMethods = [];
 
-    async function loadOrders() {
-      var btn = document.getElementById('refreshBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Laden...';
-      document.getElementById('errorBox').innerHTML = '';
-      try {
-        var res = await fetch('/api/orders');
-        if (!res.ok) throw new Error('Server error: ' + res.status);
-        var data = await res.json();
-        allOrders = data.orders || [];
-        allMethods = data.shippingMethods || [];
-        populateFilter(allMethods);
-        applyFilter();
-        document.getElementById('updated').textContent = 'Bijgewerkt: ' + new Date().toLocaleTimeString('nl-NL');
-      } catch(err) {
-        document.getElementById('errorBox').innerHTML = '<div class="error-box">Fout: ' + err.message + '</div>';
-        document.getElementById('ordersContainer').innerHTML = '<div class="empty"><div class="empty-icon">&#10060;</div><p>Kon orders niet ophalen</p></div>';
-        document.getElementById('count').textContent = '!';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<span>&#8635;</span> Vernieuwen';
-      }
-    }
+async function loadOrders() {
+var btn = document.getElementById('refreshBtn');
+btn.disabled = true;
+btn.innerHTML = '<span class="spinner"></span> Laden...';
+document.getElementById('errorBox').innerHTML = '';
+try {
+var res = await fetch('/api/orders');
+if (!res.ok) throw new Error('Server error: ' + res.status);
+var data = await res.json();
+allOrders = data.orders || [];
+allMethods = data.shippingMethods || [];
+populateFilter(allMethods);
+applyFilter();
+document.getElementById('updated').textContent = 'Bijgewerkt: ' + new Date().toLocaleTimeString('nl-NL');
+} catch(err) {
+document.getElementById('errorBox').innerHTML = '<div class="error-box">Fout: ' + err.message + '</div>';
+document.getElementById('ordersContainer').innerHTML = '<div class="empty"><div class="empty-icon">&#10060;</div><p>Kon orders niet ophalen</p></div>';
+document.getElementById('count').textContent = '!';
+} finally {
+btn.disabled = false;
+btn.innerHTML = '<span>&#8635;</span> Vernieuwen';
+}
+}
 
-    function populateFilter(methods) {
-      var sel = document.getElementById('methodFilter');
-      var cur = sel.value;
-      sel.innerHTML = '<option value="">Alle DAGBEZORGING methodes (' + allOrders.length + ')</option>';
-      methods.forEach(function(m) {
-        var opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m;
-        if (m === cur) opt.selected = true;
-        sel.appendChild(opt);
-      });
-    }
+function populateFilter(methods) {
+var sel = document.getElementById('methodFilter');
+var cur = sel.value;
+sel.innerHTML = '<option value="">Alle DAGBEZORGING methodes (' + allOrders.length + ')</option>';
+methods.forEach(function(m) {
+var opt = document.createElement('option');
+opt.value = m;
+opt.textContent = m;
+if (m === cur) opt.selected = true;
+sel.appendChild(opt);
+});
+}
 
-    function applyFilter() {
-      var selectedMethod = document.getElementById('methodFilter').value;
-      var filtered = selectedMethod
-        ? allOrders.filter(function(o){ return o._shippingMethod === selectedMethod; })
-        : allOrders;
-      document.getElementById('count').textContent = filtered.length;
-      document.getElementById('filterCount').textContent = selectedMethod
-        ? filtered.length + ' van ' + allOrders.length + ' orders'
-        : allOrders.length + ' orders totaal';
-      renderOrders(filtered);
-    }
+function applyFilter() {
+var selectedMethod = document.getElementById('methodFilter').value;
+var selectedPrint = document.getElementById('printFilter').value;
+var filtered = allOrders;
+if (selectedMethod) filtered = filtered.filter(function(o){ return o._shippingMethod === selectedMethod; });
+if (selectedPrint) filtered = filtered.filter(function(o){ return (o._printStatus || 'geen') === selectedPrint; });
+document.getElementById('count').textContent = filtered.length;
+document.getElementById('filterCount').textContent = (selectedMethod || selectedPrint)
+? filtered.length + ' van ' + allOrders.length + ' orders'
+: allOrders.length + ' orders totaal';
+renderOrders(filtered);
+updateSelection();
+}
 
-    function getFlagEmoji(countryCode) {
-      if (!countryCode) return '';
-      var code = countryCode.toUpperCase();
-      return code.replace(/./g, function(c) {
-        return String.fromCodePoint(c.charCodeAt(0) + 127397);
-      });
-    }
+function updateSelection() {
+var checked = document.querySelectorAll('.order-checkbox:checked');
+document.getElementById('selCount').textContent = checked.length;
+document.getElementById('printBtn').disabled = checked.length === 0;
+}
 
-    function renderOrders(orders) {
-      var c = document.getElementById('ordersContainer');
-      if (!orders.length) {
-        c.innerHTML = '<div class="empty"><div class="empty-icon">&#9989;</div><p>Geen orders gevonden</p></div>';
-        return;
-      }
-      var rows = orders.map(function(o) {
-        var klant = o._klant || [o.firstname, o.middlename, o.lastname].filter(Boolean).join(' ') || o.email || 'Onbekend';
-        var ordNummer = o._ordNummer || o.number || String(o.id) || '-';
-        var total = o.priceIncl ? String.fromCharCode(8364) + ' ' + parseFloat(o.priceIncl).toFixed(2).replace('.',',') : '-';
-        var date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('nl-NL', {day:'2-digit',month:'2-digit',year:'numeric'}) : '-';
-        var ship = o._shippingMethod || 'DAGBEZORGING';
-        var email = o.email || (o.billingAddress && o.billingAddress.email) || '';
-        var postcode = o.addressBillingZipcode || '';
-        var city = o.addressBillingCity || '';
-        var countryCode = (o.addressBillingCountry && (o.addressBillingCountry.code || o.addressBillingCountry.code3) || '').toUpperCase();
-        var flag = getFlagEmoji(countryCode);
-        var prods = Array.isArray(o.products) ? o.products : [];
-        var itemCount = o.itemCount || o.productsCount || o.quantityOrdered || (prods.length > 0 ? prods.length : null);
-        var itemLabel = itemCount ? itemCount + ' Item' + (itemCount !== 1 ? 's' : '') : '-';
-        var qty = o.quantityOrdered || (prods.length > 0 ? prods.reduce(function(s,p){return s+(p.quantityOrdered||1);},0) : null);
-        var qtyText = qty ? 'Hoeveelheid: ' + qty : '';
-        var valText = total !== '-' ? 'Waarde: ' + total : '';
+async function toggleBeide(orderNumber, currentStatus) {
+if (currentStatus === 'geen') return;
+var newStatus = currentStatus === 'beide' ? 'pakbon' : 'beide';
+await fetch('/api/print-status', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ orderNumbers:[orderNumber], status:newStatus }) });
+allOrders.forEach(function(o){ if (o._ordNummer === orderNumber) o._printStatus = newStatus; });
+applyFilter();
+}
 
-        return '<tr><td><input type="checkbox" class="order-checkbox"></td><td><span class="status-text">Wacht op verzending</span></td><td><div class="shop-status-icon">&#10003;</div></td><td><a class="order-num-link" href="#">' + ordNummer + '</a><div class="order-date">' + date + '</div></td><td><div class="ship-method-wrap"><div class="ship-icon">&#x1F69A;</div><span class="ship-name">' + ship + '</span></div></td><td><div class="inhoud-items">' + itemLabel + '</div>' + (qtyText ? '<div class="inhoud-detail">' + qtyText + '</div>' : '') + (valText ? '<div class="inhoud-detail">' + valText + '</div>' : '') + '</td><td><div class="klant-naam">' + (flag ? flag + ' ' : '') + klant + '</div>' + (email ? '<div class="klant-email">' + email + '</div>' : '') + ((postcode||city||countryCode) ? '<div class="klant-adres">' + [[postcode,city].filter(Boolean).join(', '), countryCode].filter(Boolean).join(' ') + '</div>' : '') + '</td></tr>';
-      }).join('');
-      c.innerHTML = '<div class="orders-table-wrap"><table class="orders-table"><thead><tr><th></th><th>STATUS</th><th>SHOP STATUS</th><th>ORDER</th><th>VERZENDMETHODE</th><th>INHOUD VAN DE BESTELLING</th><th>KLANT</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-    }
+function getFlagEmoji(countryCode) {
+if (!countryCode) return '';
+var code = countryCode.toUpperCase();
+return code.replace(/./g, function(c) {
+return String.fromCodePoint(c.charCodeAt(0) + 127397);
+});
+}
 
-    loadOrders();
-  </script>
+function renderOrders(orders) {
+var c = document.getElementById('ordersContainer');
+if (!orders.length) {
+c.innerHTML = '<div class="empty"><div class="empty-icon">&#9989;</div><p>Geen orders gevonden</p></div>';
+return;
+}
+var rows = orders.map(function(o) {
+var klant = o._klant || [o.firstname, o.middlename, o.lastname].filter(Boolean).join(' ') || o.email || 'Onbekend';
+var ordNummer = o._ordNummer || o.number || String(o.id) || '-';
+var total = o.priceIncl ? String.fromCharCode(8364) + ' ' + parseFloat(o.priceIncl).toFixed(2).replace('.',',') : '-';
+var date = o.createdAt ? new Date(o.createdAt).toLocaleDateString('nl-NL', {day:'2-digit',month:'2-digit',year:'numeric'}) : '-';
+var ship = o._shippingMethod || 'DAGBEZORGING';
+var email = o.email || (o.billingAddress && o.billingAddress.email) || '';
+var postcode = o.addressBillingZipcode || '';
+var city = o.addressBillingCity || '';
+var countryCode = (o.addressBillingCountry && (o.addressBillingCountry.code || o.addressBillingCountry.code3) || '').toUpperCase();
+var flag = getFlagEmoji(countryCode);
+var prods = Array.isArray(o.products) ? o.products : [];
+var itemCount = o.itemCount || o.productsCount || o.quantityOrdered || (prods.length > 0 ? prods.length : null);
+var itemLabel = itemCount ? itemCount + ' Item' + (itemCount !== 1 ? 's' : '') : '-';
+var qty = o.quantityOrdered || (prods.length > 0 ? prods.reduce(function(s,p){return s+(p.quantityOrdered||1);},0) : null);
+var qtyText = qty ? 'Hoeveelheid: ' + qty : '';
+var valText = total !== '-' ? 'Waarde: ' + total : '';
+var printStatus = o._printStatus || 'geen';
+var printLabel = printStatus === 'beide' ? 'Beide geprint' : (printStatus === 'pakbon' ? 'Enkel pakbon' : 'Geen geprint');
+var printBadge = '<button type="button" class="geprint-badge geprint-' + printStatus + '" onclick="toggleBeide(\'' + ordNummer + '\',\'' + printStatus + '\')" title="Klik om te wisselen tussen Enkel pakbon en Beide geprint">' + printLabel + '</button>';
+
+return '<tr><td><input type="checkbox" class="order-checkbox" data-id="' + o.id + '" data-num="' + ordNummer + '" onchange="updateSelection()"></td><td><span class="status-text">Wacht op verzending</span></td><td><div class="shop-status-icon">&#10003;</div></td><td><a class="order-num-link" href="#">' + ordNummer + '</a><div class="order-date">' + date + '</div></td><td><div class="ship-method-wrap"><div class="ship-icon">&#x1F69A;</div><span class="ship-name">' + ship + '</span></div></td><td><div class="inhoud-items">' + itemLabel + '</div>' + (qtyText ? '<div class="inhoud-detail">' + qtyText + '</div>' : '') + (valText ? '<div class="inhoud-detail">' + valText + '</div>' : '') + '</td><td><div class="klant-naam">' + (flag ? flag + ' ' : '') + klant + '</div>' + (email ? '<div class="klant-email">' + email + '</div>' : '') + ((postcode||city||countryCode) ? '<div class="klant-adres">' + [[postcode,city].filter(Boolean).join(', '), countryCode].filter(Boolean).join(' ') + '</div>' : '') + '</td><td>' + printBadge + '</td></tr>';
+}).join('');
+c.innerHTML = '<div class="orders-table-wrap"><table class="orders-table"><thead><tr><th></th><th>STATUS</th><th>SHOP STATUS</th><th>ORDER</th><th>VERZENDMETHODE</th><th>INHOUD VAN DE BESTELLING</th><th>KLANT</th><th>GEPRINT</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+function formatOrderDate(iso) {
+var d = new Date(iso);
+var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var dd = String(d.getDate()).padStart(2,'0');
+var hh = String(d.getHours()).padStart(2,'0');
+var mi = String(d.getMinutes()).padStart(2,'0');
+return months[d.getMonth()] + ' ' + dd + ', ' + d.getFullYear() + ', ' + hh + ':' + mi;
+}
+
+function buildPakbonHtml(o, products) {
+var naam = o.addressShippingName || o._klant || '-';
+var streetLine = [o.addressShippingStreet, o.addressShippingNumber].filter(Boolean).join(' ') + (o.addressShippingExtension ? (' ' + o.addressShippingExtension) : '');
+var zipcode = o.addressShippingZipcode || '';
+var city = o.addressShippingCity || '';
+var countryTitle = (o.addressShippingCountry && o.addressShippingCountry.title) || '';
+var orderDate = o.createdAt ? formatOrderDate(o.createdAt) : '-';
+var verzendMethode = o.shipmentIsPickup ? 'Afhalen bij LeJean in Leidschendam' : (o._shippingMethod || '-');
+var barcodeValue = 'PS' + String(o.id || o.number || '').padStart(16,'0');
+var rows = (products || []).map(function(p) {
+var title = p.title || p.fulltitle || p.name || '-';
+var sku = p.sku || p.ean13 || p.code || p.itemNumber || p.articleCode || '-';
+var qty = p.quantity || p.amount || 1;
+return '<tr><td class="item-title">' + title + '</td><td>' + sku + '</td><td class="qty-cell">' + qty + '</td></tr>';
+}).join('');
+return '<div class="pakbon-page">' +
+'<div class="pakbon-header"><div class="pakbon-logo">LeJean</div><div class="pakbon-barcode-wrap"><svg class="barcode" data-code="' + barcodeValue + '"></svg></div></div>' +
+'<div class="pakbon-info">' +
+'<div class="pakbon-col"><div class="pakbon-label">Orderdatum</div><div class="pakbon-value">' + orderDate + '</div>' +
+'<div class="pakbon-label pakbon-mt">Ordernummer</div><div class="pakbon-value">' + (o._ordNummer || o.number) + '</div>' +
+'<div class="pakbon-label pakbon-mt">Verzendmethode</div><div class="pakbon-value">' + verzendMethode + '</div></div>' +
+'<div class="pakbon-col"><div class="pakbon-label">Van</div><div class="pakbon-value"><b>LeJean</b></div></div>' +
+'<div class="pakbon-col"><div class="pakbon-label">Naar</div><div class="pakbon-value"><b>' + naam + '</b><br>' + streetLine + '<br>' + zipcode + '<br>' + city + '<br>' + countryTitle + '</div></div>' +
+'</div>' +
+'<table class="pakbon-items"><thead><tr><th>Item</th><th>SKU</th><th>Aantal</th></tr></thead><tbody>' + (rows || '<tr><td colspan="3" style="color:#999">Geen artikelen gevonden</td></tr>') + '</tbody></table>' +
+'</div>';
+}
+
+function pakbonStyles() {
+return '<style>*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif}body{margin:0;padding:0}.pakbon-page{padding:40px;page-break-after:always}.pakbon-header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:16px;margin-bottom:20px}.pakbon-logo{font-size:28px;font-weight:800}.pakbon-barcode-wrap{text-align:right}.pakbon-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;border-bottom:2px solid #000;padding-bottom:20px;margin-bottom:20px}.pakbon-label{font-weight:700;font-size:13px;margin-bottom:4px}.pakbon-mt{margin-top:12px}.pakbon-value{font-size:14px;line-height:1.5}.pakbon-items{width:100%;border-collapse:collapse}.pakbon-items th{text-align:left;font-size:13px;font-weight:700;border-bottom:2px solid #000;padding:8px 4px}.pakbon-items td{padding:10px 4px;border-bottom:1px solid #ccc;font-size:14px}.item-title{font-weight:700}.qty-cell{text-align:right}</style>';
+}
+
+async function printPakbonnen() {
+var checked = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+if (!checked.length) return;
+var ids = checked.map(function(cb){ return cb.getAttribute('data-id'); });
+var nums = checked.map(function(cb){ return cb.getAttribute('data-num'); });
+var orders = ids.map(function(id){ return allOrders.find(function(o){ return String(o.id) === String(id); }); }).filter(Boolean);
+
+var btn = document.getElementById('printBtn');
+var origText = btn.innerHTML;
+btn.disabled = true;
+btn.innerHTML = 'Laden...';
+
+try {
+var productsByOrder = {};
+await Promise.all(orders.map(async function(o) {
+try {
+var r = await fetch('/api/orders/' + o.id + '/products');
+var d = await r.json();
+productsByOrder[o.id] = d.products || [];
+} catch(e) { productsByOrder[o.id] = []; }
+}));
+
+var pages = orders.map(function(o) { return buildPakbonHtml(o, productsByOrder[o.id] || []); }).join('');
+var win = window.open('', '_blank');
+win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Pakbon</title>' + pakbonStyles() + '</head><body>' + pages + '<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script><script>document.querySelectorAll(".barcode").forEach(function(el){ try { JsBarcode(el, el.getAttribute("data-code"), {format:"CODE128", displayValue:true, fontSize:12, height:40, margin:0}); } catch(e){} }); window.onload = function(){ setTimeout(function(){ window.print(); }, 300); };<\/script></body></html>');
+win.document.close();
+
+await fetch('/api/print-status', {
+method: 'POST',
+headers: {'Content-Type':'application/json'},
+body: JSON.stringify({ orderNumbers: nums, status: 'pakbon' })
+});
+nums.forEach(function(n) {
+var o = allOrders.find(function(x){ return x._ordNummer === n; });
+if (o && o._printStatus !== 'beide') o._printStatus = 'pakbon';
+});
+applyFilter();
+} catch(e) {
+alert('Fout bij printen: ' + e.message);
+} finally {
+btn.disabled = false;
+btn.innerHTML = origText;
+}
+}
+
+loadOrders();
+</script>
 </body>
 </html>
