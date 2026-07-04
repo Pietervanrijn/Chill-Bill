@@ -29,15 +29,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .print-btn-caret{background:#1a1a2e;color:#fff;border:none;border-left:1px solid rgba(255,255,255,.25);padding:9px 12px;border-radius:0 20px 20px 0;font-size:12px;cursor:pointer;transition:all .2s}
 .print-btn-caret:hover:not(:disabled){background:#0f1729}
 .print-btn-caret:disabled{opacity:.35;cursor:not-allowed}
-.print-dropdown-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.18);min-width:220px;z-index:20;overflow:hidden}
-.print-dropdown-item{padding:10px 16px;font-size:14px;color:#333;cursor:pointer;white-space:nowrap}
+.print-dropdown-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.18);min-width:240px;z-index:20;overflow:hidden}
+.print-dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 16px;font-size:14px;color:#333;cursor:pointer;white-space:nowrap}
 .print-dropdown-item:hover{background:#f0f4f8}
-.print-dropdown-check{display:flex;align-items:center;gap:8px;padding:10px 16px;font-size:14px;color:#333;cursor:pointer}
-.print-dropdown-check:hover{background:#f0f4f8}
-.print-dropdown-check input{cursor:pointer}
-.print-dropdown-action{width:100%;border:none;background:#1a1a2e;color:#fff;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;border-top:1px solid rgba(0,0,0,.08)}
-.print-dropdown-action:hover{background:#0f1729}
-.print-btn-solo{border-radius:20px;display:inline-flex;align-items:center;gap:8px}
+.print-dropdown-item.active{background:#f0f4f8;font-weight:600}
+.pdi-check{color:#1a1a2e;font-weight:700;opacity:0}
+.print-dropdown-item.active .pdi-check{opacity:1}
 .print-btn-arrow{font-size:11px}
 .stats{background:#fff;border-radius:12px;padding:20px 30px;margin-bottom:24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .count{font-size:48px;font-weight:800;color:#1a1a2e;line-height:1}
@@ -106,11 +103,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 <div class="toolbar">
 <div class="print-btn-group">
-<button type="button" class="print-btn print-btn-main print-btn-solo" id="printBtn" onclick="toggleVerzendMenu(event)" disabled>&#x1F5A8;&#xFE0F; Print (<span id="selCount">0</span>) <span class="print-btn-arrow">&#x25BE;</span></button>
+<button type="button" class="print-btn print-btn-main" id="printBtn" onclick="executeCurrentPrintAction()" disabled>Aanmaken: <span id="printModeLabel">Pakbonnen</span> (<span id="selCount">0</span>)</button>
+<button type="button" class="print-btn-caret" id="printCaretBtn" onclick="toggleVerzendMenu(event)" disabled><span class="print-btn-arrow">&#x25BE;</span></button>
 <div class="print-dropdown-menu" id="verzendMenu">
-<label class="print-dropdown-check"><input type="checkbox" id="chkPakbon" checked> Print pakbon</label>
-<label class="print-dropdown-check"><input type="checkbox" id="chkVerzend"> Verzendinformatie</label>
-<button type="button" class="print-dropdown-action" id="printExecBtn" onclick="executePrintSelection()">Uitvoeren</button>
+<div class="print-dropdown-item" data-mode="verzend" onclick="setPrintMode('verzend')"><span>Verzendinformatie</span><span class="pdi-check">&#10003;</span></div>
+<div class="print-dropdown-item" data-mode="beide" onclick="setPrintMode('beide')"><span>Pakbonnen + verzendinformatie</span><span class="pdi-check">&#10003;</span></div>
+<div class="print-dropdown-item active" data-mode="pakbon" onclick="setPrintMode('pakbon')"><span>Pakbonnen</span><span class="pdi-check">&#10003;</span></div>
 </div>
 </div> <select class="filter-select" id="methodFilter" onchange="applyFilter()">
 <option value="">Alle DAGBEZORGING methodes (0)</option>
@@ -188,6 +186,7 @@ function updateSelection() {
 var checked = document.querySelectorAll('.order-checkbox:checked');
 var __selCountEl = document.getElementById('selCount'); if (__selCountEl) __selCountEl.textContent = checked.length;
 document.getElementById('printBtn').disabled = checked.length === 0;
+var __caretBtn = document.getElementById('printCaretBtn'); if (__caretBtn) __caretBtn.disabled = checked.length === 0;
 }
 
 async function toggleBeide(orderNumber, currentStatus) {
@@ -331,16 +330,23 @@ var orders = ids.map(function(id){ return allOrders.find(function(o){ return Str
 return { ids: ids, nums: nums, orders: orders };
 }
 
-async function executePrintSelection() {
+var printMode = 'pakbon';
+var PRINT_MODE_LABELS = { pakbon: 'Pakbonnen', verzend: 'Verzendinformatie', beide: 'Pakbonnen + verzendinformatie' };
+
+function setPrintMode(mode) {
+printMode = mode;
+var label = document.getElementById('printModeLabel'); if (label) label.textContent = PRINT_MODE_LABELS[mode];
+document.querySelectorAll('.print-dropdown-item').forEach(function(el) { el.classList.toggle('active', el.getAttribute('data-mode') === mode); });
 var menu = document.getElementById('verzendMenu');
 if (menu) menu.style.display = 'none';
-var doPakbon = document.getElementById('chkPakbon').checked;
-var doVerzend = document.getElementById('chkVerzend').checked;
-if (!doPakbon && !doVerzend) return;
+}
+
+async function executeCurrentPrintAction() {
 var sel = getSelectedOrders();
 if (!sel.orders.length) return;
-if (doPakbon) await printPakbonnen(sel);
-if (doVerzend) await printVerzendinformatie(sel.orders);
+if (printMode === 'pakbon') { await printPakbonnen(sel); }
+else if (printMode === 'verzend') { await printVerzendinformatie(sel.orders); }
+else if (printMode === 'beide') { await printPakbonnen(sel); await printVerzendinformatie(sel.orders); }
 }
 
 document.addEventListener('click', function(e) {
