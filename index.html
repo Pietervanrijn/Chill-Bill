@@ -19,6 +19,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .toolbar{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);flex-wrap:wrap}
 .filter-label{font-size:13px;font-weight:600;color:#555;white-space:nowrap}
 .filter-select{background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:20px;padding:8px 20px;font-size:14px;font-weight:500;color:#333;cursor:pointer;outline:none;transition:border-color .2s;min-width:180px}
+#methodFilter{min-width:130px}
 .filter-select:focus,.filter-select:hover{border-color:#4fc3f7}
 .filter-count{font-size:13px;color:#999;margin-left:auto}
 .print-btn{background:#1a1a2e;color:#fff;border:none;padding:9px 22px;border-radius:20px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
@@ -158,7 +159,7 @@ btn.innerHTML = '<span>&#8635;</span> Vernieuwen';
 function populateFilter(methods) {
 var sel = document.getElementById('methodFilter');
 var cur = sel.value;
-sel.innerHTML = '<option value="">Alle DAGBEZORGING methodes (' + allOrders.length + ')</option>';
+sel.innerHTML = '<option value="">Verzendmethode</option>';
 methods.forEach(function(m) {
 var opt = document.createElement('option');
 opt.value = m;
