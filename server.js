@@ -21,6 +21,15 @@ function savePrintStatus(data) {
 }
 let printStatusStore = loadPrintStatus();
 
+const VERZEND_COUNT_FILE = __dirname + '/verzend-count.json';
+function loadVerzendCounts() {
+try { return JSON.parse(fs.readFileSync(VERZEND_COUNT_FILE, 'utf8')); } catch(e) { return {}; }
+}
+function saveVerzendCounts(data) {
+try { fs.writeFileSync(VERZEND_COUNT_FILE, JSON.stringify(data)); } catch(e) { console.error('saveVerzendCounts error:', e.message); }
+}
+let verzendCountStore = loadVerzendCounts();
+
 async function fetchOrders() {
 let all = [], page = 1, more = true;
 while (more) {
@@ -92,6 +101,15 @@ printStatusStore[key] = status;
 });
 savePrintStatus(printStatusStore);
 res.json({ ok: true, printStatus: printStatusStore });
+});
+
+app.post('/api/verzend-print-count', (req, res) => {
+const { shippingMethod } = req.body || {};
+if (!shippingMethod) return res.status(400).json({ error: 'shippingMethod verplicht' });
+const current = (verzendCountStore[shippingMethod] || 0) + 1;
+verzendCountStore[shippingMethod] = current;
+saveVerzendCounts(verzendCountStore);
+res.json({ ok: true, count: current });
 });
 
 app.listen(PORT, () => console.log('Chill-Bill running on port ' + PORT));
