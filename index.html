@@ -90,7 +90,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 </div>
 <div class="toolbar">
-<select class="filter-select" id="methodFilter" onchange="applyFilter()">
+<button class="print-btn" id="printBtn" onclick="printPakbonnen()" disabled>&#x1F5A8;&#xFE0F; Print pakbon (<span id="selCount">0</span>)</button> <select class="filter-select" id="methodFilter" onchange="applyFilter()">
 <option value="">Alle DAGBEZORGING methodes (0)</option>
 </select>
 <select class="filter-select" id="printFilter" onchange="applyFilter()">
@@ -99,7 +99,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <option value="pakbon">Enkel pakbon</option>
 <option value="beide">Beide geprint</option>
 </select>
-<button class="print-btn" id="printBtn" onclick="printPakbonnen()" disabled>&#x1F5A8;&#xFE0F; Print pakbon (<span id="selCount">0</span>)</button>
+
 <span class="filter-count" id="filterCount"></span>
 </div>
 <div id="errorBox"></div>
