@@ -47,7 +47,7 @@ page++;
 return all;
 }
 
-async async function fetchOrderProductsSummary(orderId) {
+async function fetchOrderProductsSummary(orderId) {
 try {
 const r = await axios.get('https://api.webshopapp.com/' + SHOP + '/orders/' + orderId + '/products.json', { headers: apiHeaders() });
 const products = r.data.orderProducts || r.data.products || [];
