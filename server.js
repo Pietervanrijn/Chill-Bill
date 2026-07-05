@@ -136,7 +136,14 @@ try {
 const check = await axios.get('https://api.webshopapp.com/' + SHOP + '/orders/' + id + '.json', { headers: apiHeaders() });
 const already = check.data.order && check.data.order.isReadyForPickup;
 if (already) { results.push({ id, skipped: true }); continue; }
+// Status bijwerken naar "Klaar om opgehaald te worden" (verstuurt zelf geen mail)
 await axios.put('https://api.webshopapp.com/' + SHOP + '/orders/' + id + '.json', { order: { isReadyForPickup: true } }, { headers: apiHeaders() });
+// De juiste "klaar om op te halen" mail versturen via het shipment-niveau veld
+const shipRes = await axios.get('https://api.webshopapp.com/' + SHOP + '/shipments.json', { headers: apiHeaders(), params: { order: id } });
+const shipment = shipRes.data.shipments && shipRes.data.shipments[0];
+if (shipment) {
+await axios.put('https://api.webshopapp.com/' + SHOP + '/shipments/' + shipment.id + '.json', { shipment: { doNotifyReadyForPickup: true } }, { headers: apiHeaders() });
+}
 results.push({ id, ok: true });
 } catch(e) {
 console.error('mark-ready-pickup error for order ' + id + ':', e.message);
