@@ -31,18 +31,22 @@ try { fs.writeFileSync(VERZEND_COUNT_FILE, JSON.stringify(data)); } catch(e) { c
 let verzendCountStore = loadVerzendCounts();
 
 async function fetchOrders() {
-let all = [], page = 1, more = true;
+const statuses = ['processing_awaiting_shipment', 'processing_awaiting_pickup'];
+let all = [];
+for (const status of statuses) {
+let page = 1, more = true;
 while (more) {
 try {
 const r = await axios.get('https://api.webshopapp.com/' + SHOP + '/orders.json', {
 headers: apiHeaders(),
-params: { status: 'processing_awaiting_shipment', limit: 250, page }
+params: { status: status, limit: 250, page }
 });
 const orders = r.data.orders || [];
 all = all.concat(orders);
 more = orders.length >= 250;
 page++;
-} catch(e) { console.error('fetchOrders error:', e.message); more = false; }
+} catch(e) { console.error('fetchOrders error (status ' + status + '):', e.message); more = false; }
+}
 }
 return all;
 }
@@ -70,7 +74,7 @@ const firstName = order.firstname || '';
 const middleName = order.middlename || '';
 const lastName = order.lastname || '';
 const klant = [firstName, middleName, lastName].filter(Boolean).join(' ') || order.email || 'Onbekend';
-let shippingMethod = order.shippingTitle || order.shippingMethod || 'DAGBEZORGING';
+let shippingMethod = order.shipmentTitle || order.shippingMethod || 'DAGBEZORGING';
 const orderStr = JSON.stringify(order);
 const dagMatch = orderStr.match(/"([^"]*[Dd][Aa][Gg][Bb][Ee][Zz][Oo][Rr][Gg][Ii][Nn][Gg][^"]*)"/);
 if (dagMatch) shippingMethod = dagMatch[1];
