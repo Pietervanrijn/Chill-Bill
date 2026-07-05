@@ -61,7 +61,10 @@ return { itemCount: null, quantityOrdered: null };
 }
 
 async function enrichOrders(orders) {
-const dagOrders = orders.filter(o => JSON.stringify(o).toUpperCase().includes('DAGBEZORGING'));
+const dagOrders = orders.filter(o => {
+  const s = JSON.stringify(o).toUpperCase();
+  return s.includes('DAGBEZORGING') || s.includes('AFHALEN BIJ LEJEAN') || !!o.shipmentIsPickup;
+});
 const enriched = await Promise.all(dagOrders.map(async (order) => {
 const firstName = order.firstname || '';
 const middleName = order.middlename || '';
@@ -71,10 +74,13 @@ let shippingMethod = order.shippingTitle || order.shippingMethod || 'DAGBEZORGIN
 const orderStr = JSON.stringify(order);
 const dagMatch = orderStr.match(/"([^"]*[Dd][Aa][Gg][Bb][Ee][Zz][Oo][Rr][Gg][Ii][Nn][Gg][^"]*)"/);
 if (dagMatch) shippingMethod = dagMatch[1];
+const pickupMatch = orderStr.match(/"([^"]*[Aa][Ff][Hh][Aa][Ll][Ee][Nn]\s+[Bb][Ii][Jj]\s+[Ll][Ee][Jj][Ee][Aa][Nn][^"]*)"/);
+if (pickupMatch) shippingMethod = pickupMatch[1];
+const isPickup = !!(order.shipmentIsPickup || /AFHALEN BIJ LEJEAN/i.test(shippingMethod));
 const ordNummer = String(order.number || '').toUpperCase().startsWith('ORD') ? String(order.number) : 'ORD' + order.number;
 const printStatus = printStatusStore[String(order.number)] || 'geen';
 const summary = await fetchOrderProductsSummary(order.id);
-return { ...order, _klant: klant, _ordNummer: ordNummer, _shippingMethod: shippingMethod, _printStatus: printStatus, itemCount: summary.itemCount, quantityOrdered: summary.quantityOrdered };
+return { ...order, _klant: klant, _ordNummer: ordNummer, _shippingMethod: shippingMethod, _isPickup: isPickup, _printStatus: printStatus, itemCount: summary.itemCount, quantityOrdered: summary.quantityOrdered };
 }));
 return enriched;
 }
@@ -115,6 +121,25 @@ printStatusStore[key] = status;
 });
 savePrintStatus(printStatusStore);
 res.json({ ok: true, printStatus: printStatusStore });
+});
+
+app.post('/api/mark-ready-pickup', async (req, res) => {
+const { orderIds } = req.body || {};
+if (!Array.isArray(orderIds) || !orderIds.length) return res.status(400).json({ error: 'orderIds verplicht' });
+const results = [];
+for (const id of orderIds) {
+try {
+const check = await axios.get('https://api.webshopapp.com/' + SHOP + '/orders/' + id + '.json', { headers: apiHeaders() });
+const already = check.data.order && check.data.order.isReadyForPickup;
+if (already) { results.push({ id, skipped: true }); continue; }
+await axios.put('https://api.webshopapp.com/' + SHOP + '/orders/' + id + '.json', { order: { isReadyForPickup: true } }, { headers: apiHeaders() });
+results.push({ id, ok: true });
+} catch(e) {
+console.error('mark-ready-pickup error for order ' + id + ':', e.message);
+results.push({ id, ok: false, error: e.message });
+}
+}
+res.json({ results });
 });
 
 app.post('/api/verzend-print-count', (req, res) => {
